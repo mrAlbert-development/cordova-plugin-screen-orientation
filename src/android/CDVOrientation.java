@@ -23,76 +23,41 @@ package cordova.plugins.screenorientation;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
-
 import org.json.JSONArray;
-import org.json.JSONException;
-
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.util.Log;
+import java.util.*;
 
 public class CDVOrientation extends CordovaPlugin {
-    
-    private static final String TAG = "YoikScreenOrientation"; 
-    
-    /**
-     * Screen Orientation Constants
-     */
-    
-    private static final String ANY = "any";
-    private static final String PORTRAIT_PRIMARY = "portrait-primary";
-    private static final String PORTRAIT_SECONDARY = "portrait-secondary";
-    private static final String LANDSCAPE_PRIMARY = "landscape-primary";
-    private static final String LANDSCAPE_SECONDARY = "landscape-secondary";
-    private static final String PORTRAIT = "portrait";
-    private static final String LANDSCAPE = "landscape";
-    
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
-        
-        Log.d(TAG, "execute action: " + action);
-        
-        // Route the Action
         if (action.equals("screenOrientation")) {
             return routeScreenOrientation(args, callbackContext);
         }
-        
-        // Action not found
-        callbackContext.error("action not recognised");
+
         return false;
     }
-    
+
+    private static Map<String, Integer> orientations = new HashMap<String, Integer>() {{
+        put("any", ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+        put("portrait-primary", ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        put("portrait-secondary", ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+        put("landscape-primary", ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        put("landscape-secondary", ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        put("portrait", ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+        put("landscape", ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+    }};
+
     private boolean routeScreenOrientation(JSONArray args, CallbackContext callbackContext) {
-        
-        String action = args.optString(0);
-        
-        
-        
-        String orientation = args.optString(1);
-        
-        Log.d(TAG, "Requested ScreenOrientation: " + orientation);
-        
+        String typeOfOrientation = args.optString(1);
         Activity activity = cordova.getActivity();
-        
-        if (orientation.equals(ANY)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        } else if (orientation.equals(LANDSCAPE_PRIMARY)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } else if (orientation.equals(PORTRAIT_PRIMARY)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else if (orientation.equals(LANDSCAPE)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-        } else if (orientation.equals(PORTRAIT)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-        } else if (orientation.equals(LANDSCAPE_SECONDARY)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-        } else if (orientation.equals(PORTRAIT_SECONDARY)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+
+        Integer orientation = orientations.get(typeOfOrientation);
+        if (orientation != null) {
+            activity.setRequestedOrientation(orientation);
         }
-        
+
         callbackContext.success();
         return true;
-        
-        
     }
 }
